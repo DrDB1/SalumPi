@@ -1,6 +1,7 @@
 
 import RPi.GPIO as GPIO
 import Adafruit_DHT
+import requests
 
 #set up GPIO using BCM numbering
 GPIO.setmode(GPIO.BCM)
@@ -33,19 +34,19 @@ r = requests.post('https://api.thingspeak.com/update.json',
 	data = {'api_key':thingspeak_key, 
 	'field1':cbm_temp, 
 	'field2':cbm_relhum,
-	'field3':amb_temp
-	'field4':amb_relhum
-	'field5':cool_status
-	'field6':heat_status
-	'field7':humidifier_status
+	'field3':amb_temp,
+	'field4':amb_relhum,
+	'field5':cool_status,
+	'field6':heat_status,
+	'field7':humidifier_status,
 	'field8':fan_status
 	})
 
 
 # Print Sensor Readings
-print('              Temp    RelHum')
-print('           --------  --------')
-print('  Ambient     %4.1f     %4.2f' % (amb_temp, amb_relhum))
-print('  Chamber     %4.1f     %4.2f' % (cbm_temp, cbm_relhum))
+#print('              Temp    RelHum')
+#print('           --------  --------')
+#print('  Ambient     %4.1f     %4.2f' % (amb_temp, amb_relhum))
+#print('  Chamber     %4.1f     %4.2f' % (cbm_temp, cbm_relhum))
 	
 GPIO.cleanup()
