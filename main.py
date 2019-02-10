@@ -3,6 +3,8 @@ import RPi.GPIO as GPIO
 import Adafruit_DHT
 import requests
 import time
+import salumipi
+
 
 # Program Settings
 UPLOAD = True
@@ -22,8 +24,9 @@ humidifier = 18
 heater = 23
 freezer = 24
 fan = 0
-ambient_sensor = 21
-chamber_sensor = 20
+
+ambient = salumipi.TH_sensor(21)
+chamber = salumipi.TH_sensor(20)
 
 humidifier_status = 0
 heat_status = 0
@@ -47,21 +50,16 @@ def loop():
     while RUN:
         ts = time.time()
         # Get Sensor Readings
-        valid = False
-        amb_relhum, amb_temp = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, ambient_sensor)
-        cbm_relhum, cbm_temp = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, chamber_sensor)
-
-        # Confirm valid readings
-        if cbm_temp > -10. and cbm_temp < 50:
-            valid = True
+        ambient.get_data()
+		chamber.get_data()
 
         # Only run control if temp is valid
         if valid and CONTROL:
             if DEBUG: print('Valid Temp')
-            if cbm_temp < Tset-Tband:
+            if chamber.T < Tset-Tband:
                 heat_status = 1
                 if DEBUG: print('Turning Heater On')
-            if heat_status and cbm_temp > Tset:
+            if heat_status and chamber.T > Tset:
                 heat_status = 0
                 if DEBUG: print('Turning Heater Off')
 
@@ -69,12 +67,9 @@ def loop():
                 GPIO.output(heater, GPIO.HIGH)
             else:
                 GPIO.output(heater, GPIO.LOW)
-                
-
-        
+               
         GPIO.output(freezer, GPIO.LOW)
-        cool_status = 0
-        
+        cool_status = 0        
         fan_status = 0
 
 
@@ -84,10 +79,10 @@ def loop():
             thingspeak_key = 'H3HJYAGBW2M3DDEX'
             r = requests.post('https://api.thingspeak.com/update.json', 
                 data = {'api_key':thingspeak_key, 
-                'field1':cbm_temp, 
-                'field2':cbm_relhum,
-                'field3':amb_temp,
-                'field4':amb_relhum,
+                'field1':chamber.T, 
+                'field2':chamber.RH,
+                'field3':ambient.T,
+                'field4':ambient.RH,
                 'field5':cool_status,
                 'field6':heat_status,
                 'field7':humidifier_status,
@@ -99,8 +94,8 @@ def loop():
             print(' ---------t= %.0f --------------' % (time.time()-t0))
             print('              Temp    RelHum')
             print('           --------  --------')
-            print('  Ambient     %4.1f     %4.2f' % (amb_temp, amb_relhum))
-            print('  Chamber     %4.1f     %4.2f' % (cbm_temp, cbm_relhum))
+            print('  Ambient     %4.1f     %4.2f' % (ambient.T, ambient.RH))
+            print('  Chamber     %4.1f     %4.2f' % (chamber.T, chamber.RH))
             print(' ')
             print('  Heater: %.0f' % heat_status)
             print('  Cooler: %.0f' % cool_status)
