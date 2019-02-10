@@ -24,19 +24,19 @@ class TH_Sensor:
 	def get_data(self):
 		VALID = False
 		n = 0
-		while not VALID and (n<self.NMAX)
+		while not VALID and n<self.NMAX:
 			RH, T = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, self.pin)
-			if VERBOSE: print('%.1f C, %.1%%RH' % (T, RH))
+			if self.VERBOSE: print('%.1f C, %.1f%%RH' % (T, RH))
 			
 			# test for valid temp RH ranges
-			if RH <= self.RHNAX and RH >= self.RHMIN and T >= self.TMIN and T =< self.TMAX
+			if RH <= self.RHMAX and RH >= self.RHMIN and T >= self.TMIN and T <= self.TMAX:
 				VALID = True
 				self.T = T
 				self.RH = RH
 				self.Tk = T+273.15
-				if VERBOSE: print('Valid Reading')
+				if self.VERBOSE: print('Valid Reading')
 			else:
-				if VERBOSE: print('Invalid Reading, Loop %.0f' % n)
+				if self.VERBOSE: print('Invalid Reading, Loop %.0f' % n)
 			n+=1
 			
 			
@@ -44,5 +44,3 @@ if __name__ == '__main__':
 	test = TH_Sensor(20)
 	test.VERBOSE = True
 	test.get_data()
-	print(test.T)
-	print(test.RH)
