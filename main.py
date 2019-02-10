@@ -25,8 +25,8 @@ heater = 23
 freezer = 24
 fan = 0
 
-ambient = salumipi.TH_sensor(21)
-chamber = salumipi.TH_sensor(20)
+ambient = salumipi.TH_Sensor(21)
+chamber = salumipi.TH_Sensor(20)
 
 humidifier_status = 0
 heat_status = 0
@@ -51,10 +51,10 @@ def loop():
         ts = time.time()
         # Get Sensor Readings
         ambient.get_data()
-		chamber.get_data()
+	chamber.get_data()
 
         # Only run control if temp is valid
-        if valid and CONTROL:
+        if CONTROL:
             if DEBUG: print('Valid Temp')
             if chamber.T < Tset-Tband:
                 heat_status = 1
