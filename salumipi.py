@@ -30,15 +30,15 @@ class Chamber:
 		self.m_air = 0. # mass of air
 		self.m_h20 = 0. # mass of water
 	
-	def update(T,RH)
+	def update(self,T,RH):
 		# Air Conditions
 		self.T = T+273.15
 		self.rho_air = self.p/(self.R*self.T)
 		
 		# Water Conditions
-		self.RH = RH
-		self.p_sat = np.exp(77.3450 + 0.0057*T - 7235/T) / (T**8.2) 
-		self.rho_sat = 0.0022 * self.p_sat / T
+		self.RH = RH/100.
+		self.p_sat = np.exp(77.3450 + 0.0057*self.T - 7235/self.T) / (self.T**8.2) 
+		self.rho_sat = 0.0022 * self.p_sat / self.T
 		self.rho_h20 = self.RH*self.rho_sat
 		
 		self.m_air = self.rho_air*self.V
@@ -86,6 +86,12 @@ class TH_Sensor:
 			n+=1
 			
 if __name__ == '__main__':
-	test = TH_Sensor(20)
-	test.VERBOSE = True
-	test.get_data()
+	ref = Chamber()
+	test = Chamber()
+
+	ref.update(15,50)
+	test.update(14,50)
+
+	print(ref.Q)
+	print(test.Q)
+	print((ref.Q-test.Q)/0.0185)
