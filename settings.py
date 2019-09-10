@@ -12,7 +12,7 @@ Hset = 70.0 # %
 
 # Heater Control
 Heat_Kp  = 2.  
-Heat_Ki  = .001
+Heat_Ki  = .0005
 Heat_Kd  = .00
 Heat_max = 10. # Limit max heater value X sec/loop
 

@@ -13,11 +13,6 @@ from settings import *
 ambient = salumipi.TH_Sensor(21)
 chamber = salumipi.TH_Sensor(20)
 
-humidifier_status = 0
-heat = 0
-cool = 0
-fan_status = 0
-
 # PID setup
 heat_pid = PID(Heat_Kp, Heat_Ki, Heat_Kp, setpoint=Tset)
 
@@ -32,6 +27,12 @@ def setup():
     GPIO.setup(cooler, GPIO.OUT)
 
 def loop():
+
+    humidifier_status = 0
+    heat = 0
+    cool = 0
+    fan_status = 0
+        
     while True:
         ts = time.time()
 
@@ -41,24 +42,35 @@ def loop():
         ambient.get_data()
 	chamber.get_data()
 
-        if chamber.T > 35.0:
+        if chamber.T > 35.0 or chamber.T < 0.0:
             destroy();
             break
 
 	# Set heat time
-	heat_pid.setpoint = Tset
-	heat_pid.tunings = (Heat_Kp, Heat_Ki, Heat_Kp)
-	heat_pid.output_limits = (0, Heat_max)	
-	heat = heat_pid(chamber.T)
+	if Tset > ambient.T:
+            heat_pid.setpoint = Tset
+            heat_pid.tunings = (Heat_Kp, Heat_Ki, Heat_Kp)
+            heat_pid.output_limits = (0, Heat_max)	
+            heat = heat_pid(chamber.T)
+        else:
+            heat = 0    
 
         # Only run control if temp is valid
         if CONTROL:
             GPIO.output(heater, GPIO.HIGH)
             time.sleep(heat)
             
-        GPIO.output(heater, GPIO.LOW)               
-        GPIO.output(cooler, GPIO.LOW)
-        cool = 0        
+        GPIO.output(heater, GPIO.LOW)
+
+        buffer = 1
+        if chamber.T > Tset+buffer:
+            cool = 1
+            GPIO.output(cooler, GPIO.HIGH)
+
+        if cool and chamber.T < Tset-buffer:
+            cool = 0;
+            GPIO.output(cooler, GPIO.LOW)
+        
         fan_status = 0
 
         if UPLOAD:
